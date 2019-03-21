@@ -10,4 +10,154 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
 
-# Customize to your needs...
+# Source profile
+if [ -f ~/.profile ]; then
+    source ~/.profile
+fi
+
+# Source environment variables
+if [ -f ~/.zshenv ]; then
+    source ~/.zshenv
+fi
+
+# Manually set environment language
+export LANG=en_US.UTF-8
+
+# Compilation flags
+export ARCHFLAGS="-arch x86_64"
+
+# Set default SSH key
+export SSH_KEY_PATH="~/.ssh/rsa_id"
+
+# Git repo default directory
+export DEVDIR="$HOME/Developer"
+
+# Preferred editor for local and remote sessions
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR='vim'
+else
+  export EDITOR='code --wait'
+fi
+
+# get colours in man pages
+export LESS_TERMCAP_mb=$(printf "\e[1;31m") \
+LESS_TERMCAP_md=$(printf "\e[1;31m") \
+LESS_TERMCAP_me=$(printf "\e[0m") \
+LESS_TERMCAP_se=$(printf "\e[0m") \
+LESS_TERMCAP_so=$(printf "\e[1;44;33m") \
+LESS_TERMCAP_ue=$(printf "\e[0m") \
+LESS_TERMCAP_us=$(printf "\e[1;32m")
+
+# golang paths
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
+# hub - the command line wrapper for git
+eval "$(hub alias -s)"
+fpath=(~/.zsh/completions $fpath)
+autoload -U compinit && compinit
+
+
+#
+# Functions
+#--------
+
+# start a 1x3 tmux session
+dotmux() {
+    NAME="dotmux-session"
+
+    tmux kill-session -t $NAME &> /dev/null
+
+    tmux new-session -s $NAME -n $NAME -d
+    tmux split-window -h -t $NAME
+    tmux split-window -t $NAME:0.1 -v -p 66
+    tmux split-window -t $NAME:0.2 -v -p 50
+
+    tmux select-pane -t $NAME:0.0
+    tmux attach -t $NAME
+}
+
+# start a new tmux session whenever SSHing,
+# Will preferentially attach to existing session if exists.
+tssh () {
+  /usr/bin/ssh -t $@ "tmux attach || tmux new";
+}
+
+# start a new tmux session whenever MOSHing,
+# Will preferentially attach to existing session if exists.
+tmosh () {
+  /usr/local/bin/mosh $@ -- tmux a
+}
+
+
+#
+# Aliases
+#--------
+# For a complete list, type "alias" in terminal
+
+
+# list all active VPS instances
+alias vps-list='echo "\nDigital Ocean:\n---------------"; doctl compute droplet list; echo "\n\nLinode:\n---------------"; linode -o linode -a list; echo "\n\nVultr:\n---------------"; vultr servers;'
+
+
+# download website in current folder
+alias website-dl='wget --limit-rate=200k --no-clobber --convert-links --random-wait -r -p -E -e robots=off -U mozilla'
+
+# graphical display of git log
+alias ggraph='git log --graph --oneline --decorate --color --all'
+
+# smoothstreamstv
+alias sstv='$DEVDIR/SmoothStreamsTV-playlist/sstv-playlist.py'
+
+# ticker
+alias ticker='python3 $DEVDIR/Ticker/ticker.py'
+
+#
+# macOS
+#------
+#
+
+
+# update macOS and all system applications and packages
+bubu() {
+  echo "\033[1m==> Updating Homebrew packages\033[0m"
+    brew update; brew upgrade; brew prune; brew cleanup;
+  echo 
+  echo "\033[1m==> Updating Caskroom packages\033[0m"
+    brew cask outdated; brew cask upgrade; brew cask cleanup;
+  echo 
+  echo "\033[1m==> Updating Mac App Store apps\033[0m"
+    $(which mas) outdated; $(which mas) upgrade;
+  echo 
+  echo "\033[1m==> Updating macOS\033[0m"
+    softwareupdate -ir;
+}
+
+# print summary of Apple Calendar events
+schedule() {
+    hash icalbuddy 2>/dev/null || { echo >&2 "ical-buddy is not installed.\n\nTry 'brew install ical-buddy'"; exit 1; }
+    icalbuddy -n -nc -f $@;
+}
+
+# connect to VPN node in Tunnelblick, usage: `vpn_connect "CA Toronto"`
+vpn_connect() {
+    osascript -e "tell application \"Tunnelblick\"" -e "connect \"$1\"" -e "end tell"
+}
+
+# disconnect from VPN node, usage: `vpn_disconnect`
+vpn_disconnect() {
+    osascript -e "tell application \"Tunnelblick\"" -e "disconnect all" -e "end tell"              ⏎
+}
+
+# show or hide "hidden" files
+alias showfiles='defaults write com.apple.finder AppleShowAllFiles YES; killall Finder /System/Library/CoreServices/Finder.app'
+alias hidefiles='defaults write com.apple.finder AppleShowAllFiles NO; killall Finder /System/Library/CoreServices/Finder.app'
+
+# refresh launchpad
+alias refresh_launchpad='defaults write com.apple.dock ResetLaunchPad -bool true; killall Dock; sleep 2; rm ~/Library/Application\ Support/Dock/*.db; killall Dock'
+
+# ical-buddy
+alias calendar='test -e "/usr/local/bin/icalbuddy" && icalbuddy -n -nc -f $@'
+
+# iTerm shell integration
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
