@@ -90,6 +90,22 @@ tmosh () {
   /usr/local/bin/mosh $@ -- tmux a
 }
 
+# update all git repositories in current directory
+# (fetch all remotes and pull master)
+git-recursive-update () {
+find . -type d -name .git -exec sh -c \
+    "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD) && \
+    cd \"{}\"/../ && \
+    pwd && \
+    git stash && \
+    git fetch -a && \
+    git checkout master && \
+    git pull && \
+    git checkout \${CURRENT_BRANCH} && \
+    git stash pop" \;
+echo "git recursive update complete."
+}
+
 
 #
 # Aliases
