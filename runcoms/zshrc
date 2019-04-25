@@ -138,10 +138,10 @@ alias ticker='python3 $DEVDIR/Ticker/ticker.py'
 # update macOS and all system applications and packages
 bubu() {
   echo "\033[1m==> Updating Homebrew packages\033[0m"
-    brew update; brew upgrade; brew prune; brew cleanup;
+    brew update; brew upgrade;
   echo 
   echo "\033[1m==> Updating Caskroom packages\033[0m"
-    brew cask outdated; brew cask upgrade; brew cask cleanup;
+    brew cask outdated; brew cask upgrade; brew cleanup;
   echo 
   echo "\033[1m==> Updating Mac App Store apps\033[0m"
     $(which mas) outdated; $(which mas) upgrade;
