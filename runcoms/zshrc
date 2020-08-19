@@ -51,7 +51,7 @@ export GOPATH=$HOME/go
 export PATH=$PATH:$GOPATH/bin
 
 # hub - the command line wrapper for git
-eval "$(hub alias -s)"
+# eval "$(hub alias -s)"
 fpath=(~/.zsh/completions $fpath)
 autoload -U compinit && compinit
 
